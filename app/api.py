@@ -1,9 +1,10 @@
 from fastapi import APIRouter, UploadFile, File, Form
 from app.vision_ai import analyze_image_with_ai
 from app.decision_engine import decide
-from app.audit import log_audit
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Maize Analysis"]
+)
 
 @router.post("/analyze")
 async def analyze(
@@ -13,10 +14,15 @@ async def analyze(
 ):
     image_bytes = await image.read()
 
-    ai = analyze_image_with_ai(image_bytes)
-    decision = decide(ai["visible_symptoms"], crop_stage, plant_part)
+    # 1. AI extracts visible symptoms ONLY
+    ai_result = analyze_image_with_ai(image_bytes)
+    symptoms = ai_result["visible_symptoms"]
 
-    result = {
+    # 2. RULE ENGINE decides category + action
+    decision = decide(symptoms, crop_stage, plant_part)
+
+    # 3. Final structured response
+    return {
         "crop": "Maize",
         "crop_stage": crop_stage,
         "plant_part": plant_part,
@@ -28,6 +34,3 @@ async def analyze(
         "risk_level": decision["risk"],
         "disclaimer": "Advisory only"
     }
-
-    log_audit(result)
-    return result
