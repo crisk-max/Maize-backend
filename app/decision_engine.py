@@ -1,39 +1,57 @@
 def decide(symptoms, crop_stage, plant_part):
-    if any("lesion" in s for s in symptoms):
+    symptoms_text = " ".join(symptoms).lower()
+
+    # 1. Disease — STRICT RULE
+    if any(word in symptoms_text for word in ["lesion", "pustule", "rot", "mold", "blight"]):
         return {
             "category": "Disease",
             "diagnosis": "Disease symptoms detected",
-            "confidence": 0.8,
+            "confidence": 0.85,
             "evidence": symptoms,
-            "actions": ["Consult agronomist"],
+            "actions": [
+                "Confirm disease with field agronomist",
+                "Follow integrated disease management practices"
+            ],
             "risk": "High"
         }
 
-    if any("chewing" in s for s in symptoms):
+    # 2. Pest damage — STRICT RULE
+    if any(word in symptoms_text for word in ["chewing", "holes", "frass", "dead heart"]):
         return {
-            "category": "Pest",
-            "diagnosis": "Pest damage detected",
-            "confidence": 0.8,
+            "category": "Pest Damage",
+            "diagnosis": "Insect damage detected",
+            "confidence": 0.85,
             "evidence": symptoms,
-            "actions": ["Check pest presence"],
+            "actions": [
+                "Inspect whorl and stem for pests",
+                "Apply IPM practices if infestation confirmed"
+            ],
             "risk": "High"
         }
 
-    if any("purple" in s for s in symptoms):
+    # 3. Nutrient deficiency / physiological stress
+    if any(word in symptoms_text for word in ["purple", "yellow", "pale", "discoloration"]):
         return {
-            "category": "Nutrient Stress",
-            "diagnosis": "Phosphorus deficiency (probable)",
+            "category": "Nutrient / Physiological Stress",
+            "diagnosis": "Likely phosphorus deficiency or temperature-related stress",
             "confidence": 0.75,
             "evidence": symptoms,
-            "actions": ["Check soil P levels"],
+            "actions": [
+                "Check soil nutrient status",
+                "Avoid unnecessary pesticide sprays",
+                "Stress often reduces as crop establishes"
+            ],
             "risk": "Low"
         }
 
+    # 4. Healthy
     return {
         "category": "Healthy",
-        "diagnosis": "No visible issues",
+        "diagnosis": "No visible stress symptoms",
         "confidence": 0.9,
         "evidence": symptoms,
-        "actions": ["Continue best practices"],
+        "actions": [
+            "Continue recommended agronomic practices"
+        ],
         "risk": "None"
     }
